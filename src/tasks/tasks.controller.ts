@@ -1,9 +1,8 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
-import { NotFoundError } from 'rxjs';
 import { CreateTaskDTO } from './dtos/create-task.dto';
 import { FilterTaskDTO } from './dtos/filter-task.dto';
 import { UpdateTaskStatusDTO } from './dtos/updateTaskStatus.dto';
-import { Task, Task_Status } from './task.model';
+import { Task } from './task.model';
 import { TaskService } from './tasks.service';
 @Controller('tasks')
 export class TaskController {
