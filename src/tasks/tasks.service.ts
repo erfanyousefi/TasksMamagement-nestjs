@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Task, Task_Status } from './task.model';
 import { v4 as uuid } from "uuid"
 import { CreateTaskDTO } from './dtos/create-task.dto';
@@ -21,18 +21,24 @@ export class TaskService {
         return task
     }
     public findTaskById(id): Task {
-        return this.tasks.find(task => task.id === id)
+        const task = this.tasks.find(task => task.id === id)
+        if (!task) {
+            throw new NotFoundException(`was not exist task with id : ${id}`)
+        }
+        return task;
     }
-    public deleteTaskById(id): string {
-        this.tasks = [...this.tasks.filter(task => task.id !== id)]
-        return "Deleting Task Done!"
+    public deleteTaskById(id): Task {
+        const found = this.findTaskById(id);
+        this.tasks = this.tasks.filter(task => task.id !== found.id)
+        return found
     }
     public updateTaskStatus(id, status: Task_Status): Task {
+        const found = this.findTaskById(id);
         this.tasks = this.tasks.map(task => {
-            if (task.id === id) task.status = status
+            if (task.id === found.id) task.status = status
             return task
         })
-        return this.findTaskById(id)
+        return found
     }
     public findTaskWithFilter(filterTaskDto: FilterTaskDTO): Task[] {
         const { status, search } = filterTaskDto;
@@ -44,7 +50,7 @@ export class TaskService {
         }
         //do some things if exist search
         if (search) {
-            tasks = tasks.filter(task => 
+            tasks = tasks.filter(task =>
                 (task.title.includes(search) || task.description.includes(search))
             )
         }
