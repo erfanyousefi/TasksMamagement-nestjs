@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CategoryModule } from './categories/category.module';
 import { TaskModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [TaskModule, CategoryModule,
     TypeOrmModule.forRoot({
@@ -13,6 +14,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       database: 'Tasks-management',
       autoLoadEntities: true,
       synchronize: true
-    })],
+    }), AuthModule],
 })
 export class AppModule { }
