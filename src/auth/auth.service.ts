@@ -2,24 +2,29 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserRepository } from "./auth.repository";
 import { CreateUserDTO } from "./dto/user-create.dto";
-import { User } from "./user.entity";
-import * as bcrypt from "bcrypt"
+import { JwtService } from "@nestjs/jwt";
+import { JwtPayload } from "./dto/JwtPayload";
 @Injectable()
 export class AuthService {
-    constructor(@InjectRepository(UserRepository) private readonly userRepository: UserRepository) { }
+    constructor(
+        @InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+        private readonly jwtService: JwtService
+    ) { }
     async signup(createUserDto: CreateUserDTO): Promise<object> {
         return this.userRepository.createUser(createUserDto);
     }
     async signin(createUserDto: CreateUserDTO): Promise<object> {
-        let { email, password } = createUserDto;
-        const user = await this.userRepository.findOne({ email });
-        if (user && bcrypt.compareSync(password, user.password)) {
+        const user = await this.userRepository.signin(createUserDto);
+        const payload : JwtPayload = { email: user.email };
+        const accessToken = this.jwtService.sign(payload);
+        user.token = accessToken;
+        const result = await this.userRepository.save(user).then(user => {
             return {
-                status : 200,
-                message : "Success"
+                accessToken: user.token
             }
-        }else{
-            throw new UnauthorizedException('Email Or password is mistak')
-        }
+        }).catch(err => {
+            throw new UnauthorizedException("Can not signin your account please trining again")
+        })
+        return result
     }
 }

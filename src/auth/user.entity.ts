@@ -10,4 +10,6 @@ export class User {
     password: string;
     @Column({ nullable: false, unique : true })
     email: string
+    @Column({default : ""})
+    token : string
 }
